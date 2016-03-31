@@ -1,9 +1,9 @@
 package com.recruitcenter.api.entity;
 
 public class JobDetail {
-String id = null;
+	String id = "";
 	
-	String name = null;
+	String name = "";
 	
 	public String getId() {
 		return id;
@@ -69,19 +69,19 @@ String id = null;
 		this.time = time;
 	}
 
-	String company = null;
+	String company = "";
 	
-	String location = null;
+	String location = "";
 	
-	String salary = null;
+	String salary = "";
 	
-	String degree = null;
+	String degree = "";
 	
-	String companyId = null;
+	String companyId = "";
 	
-	String time = null;
+	String time = "";
 	
-	String experience = null;
+	String experience = "";
 	
 	public String getExperience() {
 		return experience;
@@ -91,19 +91,19 @@ String id = null;
 		this.experience = experience;
 	}
 
-	String num = null;
+	String num = "";
 	
-	String type = null;
+	String type = "";
 	
-	String contact = null;
+	String contact = "";
 	
-	String tel = null;
+	String tel = "";
 	
-	String email = null;
+	String email = "";
 	
-	String address = null;
+	String address = "";
 	
-	String description = null;
+	String description = "";
 
 	public String getNum() {
 		return num;

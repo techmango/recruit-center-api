@@ -3,18 +3,18 @@ package com.recruitcenter.api.entity;
 import java.util.ArrayList;
 
 public class CompanyDetail {
-	String id;
-	String name;
-	String industry;
-	String type;
-	String size;
-	String website;
-	String contact;
-	String tel;
-	String email;
-	String address;
-	String description;
-	ArrayList<JobEntity> job = new ArrayList<JobEntity>();
+	String id = "";
+	String name = "";
+	String industry = "";
+	String type = "";
+	String size = "";
+	String website = "";
+	String contact = "";
+	String tel = "";
+	String email = "";
+	String address = "";
+	String description = "";
+	ArrayList<JobEntity> job = null;
 
 	public String getId() {
 		return id;

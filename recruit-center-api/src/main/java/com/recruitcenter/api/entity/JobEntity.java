@@ -3,7 +3,7 @@ package com.recruitcenter.api.entity;
 public class JobEntity {
 	String id = null;
 	
-	String name = null;
+	String name = "";
 	
 	public String getId() {
 		return id;
@@ -69,15 +69,15 @@ public class JobEntity {
 		this.time = time;
 	}
 
-	String company = null;
+	String company = "";
 	
-	String location = null;
+	String location = "";
 	
-	String salary = null;
+	String salary = "";
 	
-	String degree = null;
+	String degree = "";
 	
-	String companyId = null;
+	String companyId = "";
 	
-	String time = null;
+	String time = "";
 }

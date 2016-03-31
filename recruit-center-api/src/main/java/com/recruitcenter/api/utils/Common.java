@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,10 +30,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -530,7 +536,7 @@ public class Common {
 		return cDate;
 	}
 	
-	public static JSONObject getJSONByGet(String url){
+	public static JSONObject getJObjectByGet(String url){
 		JSONObject resultJsonObject = null;
 		if ("".equals(url) || url == null) {
 			return null;
@@ -610,5 +616,55 @@ public class Common {
 			}  
         }  
         return resultJsonArray;
+    }
+	
+	public static JSONObject getJObjectByPost(String url, Map<String, String> params){
+		JSONObject resultJsonObject= null;
+		if ("".equals(url) || url == null) {
+			return null;
+		}
+		CloseableHttpClient httpClient = HttpClients.createDefault();
+		List<NameValuePair> nvps = new ArrayList <NameValuePair>();  
+        
+        Set<String> keySet = params.keySet();  
+        for(String key : keySet) {  
+            nvps.add(new BasicNameValuePair(key, params.get(key)));  
+        }  
+        
+		// 利用URL生成一个HttpPost请求
+		HttpPost httpPost = new HttpPost(url);
+		
+		CloseableHttpResponse httpResponse = null;
+		try {
+			// HttpClient发出一个Http Post请求
+			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+			httpResponse = httpClient.execute(httpPost);
+			// 得到httpResponse的状态响应码
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			if (statusCode == HttpStatus.SC_OK) {
+				// 得到httpResponse的实体数据
+				HttpEntity httpEntity = httpResponse.getEntity();
+				if (httpEntity != null) {
+					try {
+						String content = EntityUtils.toString(httpEntity, "UTF-8");
+						resultJsonObject = JSONObject.parseObject(content);
+						EntityUtils.consume(httpEntity);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {  
+			try {
+				httpResponse.close();
+				httpClient.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}  
+        }  
+        return resultJsonObject;
     }
 }

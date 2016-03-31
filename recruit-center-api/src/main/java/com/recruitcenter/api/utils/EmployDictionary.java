@@ -76,17 +76,17 @@ public class EmployDictionary {
 	
 	public static Map<String, String> maritalStatus = new TreeMap<String, String>() {
 		{
-			put("72",	"不限");
-			put("73",	"已婚");
-			put("112",	"未婚");
+			put("",	"不限");
+			put("8",	"已婚");
+			put("11",	"未婚");
 		}
 	};
 	
 	public static Map<String, String> sexList = new TreeMap<String, String>() {
 		{
-			put("62",	"不限");
-			put("63",	"男");
-			put("64",	"女");
+			put("",	"不限");
+			put("6",	"男");
+			put("7",	"女");
 		}
 	};
 }
