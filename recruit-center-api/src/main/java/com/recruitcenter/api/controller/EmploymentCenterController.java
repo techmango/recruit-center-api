@@ -1,6 +1,8 @@
 package com.recruitcenter.api.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +166,8 @@ public class EmploymentCenterController extends BaseController {
 					 obj.setNum(jsonObj.getString("招聘人数"));
 					 obj.setType(jsonObj.getString("工作性质"));
 					 obj.setDescription(jsonObj.getString("岗位描述"));
-					 obj.setTel(jsonObj.getString("联系方式"));
+					 obj.setTel(jsonObj.getString("手机"));
+					 obj.setEmail(jsonObj.getString("邮箱"));
 					 info.getData().add(obj);
 				}
 			}
@@ -250,67 +253,64 @@ public class EmploymentCenterController extends BaseController {
 	
 	@RequestMapping(value="getSalaryReqList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getSalaryReqList() {
-		return getComClass("34", "获取天涯人力薪资要求列表");
+	public GlobalBaseGenericArray<KeyValuePair> getSalaryReqList(String flag) {
+		return getUserClass("29", "获取天涯人力薪资要求列表", flag);
 	}
 	
 	@RequestMapping(value="getCityList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getCityList() {
-		return getDic(EmployDictionary.city, "获取天涯人力工作地点列表");
+	public GlobalBaseGenericArray<KeyValuePair> getCityList(String flag) {
+		return getDic(EmployDictionary.city, "获取天涯人力工作地点列表", flag);
 	}
 	
 	@RequestMapping(value="getEducationList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getEducationList(String flag) {
-		GlobalBaseGenericArray<KeyValuePair> ret = getComClass("38", "获取天涯人力学历水平列表");
-		if(flag != null && flag.equals("0") == true) {
-			ret.getData().remove(0);
-		}
+		GlobalBaseGenericArray<KeyValuePair> ret = getUserClass("3", "获取天涯人力学历水平列表", flag);
 		return ret;
 	}
 	
 	@RequestMapping(value="getExperienceList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getExperienceList(String flag) {
-		GlobalBaseGenericArray<KeyValuePair> ret = getComClass("10", "获取天涯人力工作经验列表");
+		GlobalBaseGenericArray<KeyValuePair> ret = getUserClass("4", "获取天涯人力工作经验列表", "");
 		if(flag != null && flag.equals("1") == true) {
 			KeyValuePair e = new KeyValuePair();
 			e.setId("");
 			e.setName("不限");
-			ret.getData().add(e);
+			ret.getData().add(0, e);
 		}
 		return ret;
 	}
 	
 	@RequestMapping(value="getJobTypeList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getJobTypeList() {
-		return getComClass("35", "获取天涯人力职位类型列表");
+	public GlobalBaseGenericArray<KeyValuePair> getJobTypeList(String flag) {
+		return getUserClass("56", "获取天涯人力职位类型列表", flag);
 	}
 	
 	@RequestMapping(value="getPeriodList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getPeriodList() {
-		return getDic(EmployDictionary.period, "获取天涯人力发布时间列表");
+	public GlobalBaseGenericArray<KeyValuePair> getPeriodList(String flag) {
+		return getDic(EmployDictionary.period, "获取天涯人力发布时间列表", flag);
 	}
 	
 	@RequestMapping(value="getMaritalStatus", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getMaritalStatus() {
-		return getDic(EmployDictionary.maritalStatus, "获取天涯人力婚姻状况列表");
+	public GlobalBaseGenericArray<KeyValuePair> getMaritalStatus(String flag) {
+		return getDic(EmployDictionary.maritalStatus, "获取天涯人力婚姻状况列表", flag);
 	}
 	
 	@RequestMapping(value="getSexList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getSexList() {
-		return getDic(EmployDictionary.sexList, "获取天涯人力性别列表");
+	public GlobalBaseGenericArray<KeyValuePair> getSexList(String flag) {
+		return getDic(EmployDictionary.sexList, "获取天涯人力性别列表", flag);
 	}
 	
 	@RequestMapping(value="getArrivalDays", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getArrivalDays() {
-		return getComClass("36", "获取天涯人力到岗时间列表");
+	public GlobalBaseGenericArray<KeyValuePair> getArrivalDays(String flag) {
+		return getUserClass("44", "获取天涯人力到岗时间列表", flag);
 	}
 	
 	@RequestMapping(value="getCompanyInfo", method=RequestMethod.GET)
@@ -363,7 +363,7 @@ public class EmploymentCenterController extends BaseController {
 		return info;
 	}
 
-	private GlobalBaseGenericArray<KeyValuePair> getDic(Map<String, String> dic, String category) {
+	private GlobalBaseGenericArray<KeyValuePair> getDic(Map<String, String> dic, String category, String flag) {
 		GlobalBaseGenericArray<KeyValuePair> info = new GlobalBaseGenericArray<KeyValuePair>();
 		try {
 			for(String key : dic.keySet()) {
@@ -371,6 +371,17 @@ public class EmploymentCenterController extends BaseController {
 				 obj.setId(key);
 				 obj.setName(dic.get(key));
 				 info.getData().add(obj);
+			}
+			Collections.sort(info.getData(), new Comparator<KeyValuePair>() {
+
+				@Override
+				public int compare(KeyValuePair o1, KeyValuePair o2) {
+					return o1.getId().hashCode() - o2.getId().hashCode();
+				}
+				
+			});
+			if(flag != null && flag.equals("0") == true) {
+				info.getData().remove(0);
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
@@ -382,10 +393,10 @@ public class EmploymentCenterController extends BaseController {
 		return info;
 	}
 	
-	private GlobalBaseGenericArray<KeyValuePair> getComClass(String keyId, String category) {
+	private GlobalBaseGenericArray<KeyValuePair> getUserClass(String keyId, String category, String flag) {
 		GlobalBaseGenericArray<KeyValuePair> info = new GlobalBaseGenericArray<KeyValuePair>();
 		try {
-			JSONArray result = Common.getJArrayByGet(String.format("http://www.daijun.com/webs/comclass.php?keyid=%s", keyId));
+			JSONArray result = Common.getJArrayByGet(String.format("http://www.daijun.com/webs/userclass.php?keyid=%s", keyId));
 			if(result != null && result.size() > 0) {
 				for(Object j : result.toArray()) {
 					 JSONObject jsonObj = (JSONObject) j;
@@ -394,6 +405,17 @@ public class EmploymentCenterController extends BaseController {
 					 obj.setName(jsonObj.getString("name"));
 					 info.getData().add(obj);
 				}
+			}
+			Collections.sort(info.getData(), new Comparator<KeyValuePair>() {
+
+				@Override
+				public int compare(KeyValuePair o1, KeyValuePair o2) {
+					return o1.getId().hashCode() - o2.getId().hashCode();
+				}
+				
+			});
+			if(flag != null && flag.equals("0") == true) {
+				info.getData().remove(0);
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
@@ -540,7 +562,7 @@ public class EmploymentCenterController extends BaseController {
 				info.getData().setEmail(baseInfo.getData().getEmail());
 				info.getData().setEvaluate(baseInfo.getData().getEvaluate());
 				info.getData().setHeight(baseInfo.getData().getHeight());
-				info.getData().setHukou(baseInfo.getData().getMarriage());
+				info.getData().setHukou(baseInfo.getData().getHukou());
 				info.getData().setName(baseInfo.getData().getName());
 				info.getData().setPhone(baseInfo.getData().getTelphone());
 				info.getData().setSex(baseInfo.getData().getSex());
@@ -950,7 +972,7 @@ public class EmploymentCenterController extends BaseController {
 	
 	@RequestMapping(value="modifyIcon", method=RequestMethod.POST)
 	@ResponseBody
-	public GlobalBaseInfo modifyIcon(String userId, @RequestParam("icon") MultipartFile icon, 
+	public GlobalBaseInfo modifyIcon(String userId, @RequestParam(value="icon",required=false) MultipartFile icon, 
 			 String password) {
 		
 		GlobalBaseInfo info = new GlobalBaseInfo();

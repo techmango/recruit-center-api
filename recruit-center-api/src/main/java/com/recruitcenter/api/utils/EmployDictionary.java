@@ -66,7 +66,7 @@ public class EmployDictionary {
 	
 	public static Map<String, String> period = new TreeMap<String, String>() {
 		{
-			put("",		"全部");
+			put("",		"不限");
 			put("1",	"今天");
 			put("3",	"最近三天");
 			put("7",	"最近一周");
