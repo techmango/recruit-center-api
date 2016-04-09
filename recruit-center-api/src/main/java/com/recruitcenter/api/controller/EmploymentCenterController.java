@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tomcat.util.http.fileupload.DiskFileUpload;
+import org.apache.tomcat.util.http.fileupload.FileItem;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.recruitcenter.api.entity.CompanyDetail;
@@ -42,6 +46,7 @@ import com.recruitcenter.api.entity.output.KeyValueTree;
 import com.recruitcenter.api.utils.Common;
 import com.recruitcenter.api.utils.EmployDictionary;
 import com.recruitcenter.api.utils.ListPageUtils;
+import com.recruitcenter.api.utils.Md5Tool;
 
 @Controller
 @RequestMapping("/base/")
@@ -107,9 +112,10 @@ public class EmploymentCenterController extends BaseController {
 		GlobalBaseGenericArray<JobEntity> info = new GlobalBaseGenericArray<JobEntity>();
 		
 		try {
-			JSONArray result = Common.getJArrayByGet(
-					String.format("http://www.daijun.com/webs/zwlb.php?key=%s&location=%s&industry=%s&position=%s&salary=%s&degree=%s&experience=%s&type=%s&time=%s", 
-					key, location, industry, position, salary, degree, experience, type, time));
+			String searchUrl = String.format("http://www.daijun.com/webs/zwlb.php?key=%s&location=%s&industry=%s&position=%s&salary=%s&degree=%s&experience=%s&type=%s&time=%s", 
+					key, location, industry, position, salary, degree, experience, type, time);
+			log.info(searchUrl);
+			JSONArray result = Common.getJArrayByGet(searchUrl);
 			if(result != null && result.size() > 0) {
 				ArrayList<JobEntity> filterList = new ArrayList<JobEntity>();
 				for(Object j : result.toArray()) {
@@ -153,7 +159,7 @@ public class EmploymentCenterController extends BaseController {
 				for(Object j : result.toArray()) {
 					 JSONObject jsonObj = (JSONObject) j;
 					 JobDetail obj = new JobDetail();
-					 obj.setId(jsonObj.getString("uid"));
+					 obj.setId(jsonObj.getString("gid"));
 					 obj.setName(jsonObj.getString("岗位名称"));
 					 obj.setCompanyId(jsonObj.getString("uid"));
 					 obj.setCompany(jsonObj.getString("企业名称"));
@@ -168,6 +174,7 @@ public class EmploymentCenterController extends BaseController {
 					 obj.setDescription(jsonObj.getString("岗位描述"));
 					 obj.setTel(jsonObj.getString("手机"));
 					 obj.setEmail(jsonObj.getString("邮箱"));
+					 obj.setContact(jsonObj.getString("联系人"));
 					 info.getData().add(obj);
 				}
 			}
@@ -184,7 +191,7 @@ public class EmploymentCenterController extends BaseController {
 	
 	@RequestMapping(value="getIndustryList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValuePair> getIndustryList() {
+	public GlobalBaseGenericArray<KeyValuePair> getIndustryList(String flag) {
 		GlobalBaseGenericArray<KeyValuePair> info = new GlobalBaseGenericArray<KeyValuePair>();
 		try {
 			JSONArray result = Common.getJArrayByGet("http://www.daijun.com/webs/industry.php");
@@ -196,6 +203,12 @@ public class EmploymentCenterController extends BaseController {
 					 obj.setName(jsonObj.getString("name"));
 					 info.getData().add(obj);
 				}
+			}
+			if(flag != null && flag.equals("1") == true) {
+				KeyValuePair e = new KeyValuePair();
+				e.setId("");
+				e.setName("不限");
+				info.getData().add(0, e);
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
@@ -209,7 +222,7 @@ public class EmploymentCenterController extends BaseController {
 	
 	@RequestMapping(value="getJobClassList", method=RequestMethod.GET)
 	@ResponseBody
-	public GlobalBaseGenericArray<KeyValueTree> getJobClassList() {
+	public GlobalBaseGenericArray<KeyValueTree> getJobClassList(String flag) {
 		GlobalBaseGenericArray<KeyValueTree> info = new GlobalBaseGenericArray<KeyValueTree>();
 		try {
 			JSONArray result = Common.getJArrayByGet("http://www.daijun.com/webs/jobclass.php");
@@ -225,6 +238,12 @@ public class EmploymentCenterController extends BaseController {
 					 }
 					 info.getData().add(obj);
 				}
+			}
+			if(flag != null && flag.equals("1") == true) {
+				KeyValueTree e = new KeyValueTree();
+				e.setId("");
+				e.setName("不限");
+				info.getData().add(0, e);
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
@@ -254,7 +273,17 @@ public class EmploymentCenterController extends BaseController {
 	@RequestMapping(value="getSalaryReqList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getSalaryReqList(String flag) {
-		return getUserClass("29", "获取天涯人力薪资要求列表", flag);
+		if((flag != null && flag.equals("1") == true) || flag == null)
+		{
+			GlobalBaseGenericArray<KeyValuePair> ret = getComClass("34","获取天涯人力薪资要求列表", flag);
+			KeyValuePair e = new KeyValuePair();
+			e.setId("");
+			e.setName("不限");
+			ret.getData().add(0, e);
+			return ret;
+		}
+		else
+			return getUserClass("29", "获取天涯人力薪资要求列表", flag);
 	}
 	
 	@RequestMapping(value="getCityList", method=RequestMethod.GET)
@@ -266,27 +295,34 @@ public class EmploymentCenterController extends BaseController {
 	@RequestMapping(value="getEducationList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getEducationList(String flag) {
-		GlobalBaseGenericArray<KeyValuePair> ret = getUserClass("3", "获取天涯人力学历水平列表", flag);
-		return ret;
+		if((flag != null && flag.equals("1") == true) || flag == null)
+			return getComClass("38","获取天涯人力学历水平列表", flag);
+		else
+			return getUserClass("3", "获取天涯人力学历水平列表", flag);
 	}
 	
 	@RequestMapping(value="getExperienceList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getExperienceList(String flag) {
-		GlobalBaseGenericArray<KeyValuePair> ret = getUserClass("4", "获取天涯人力工作经验列表", "");
-		if(flag != null && flag.equals("1") == true) {
+		if((flag != null && flag.equals("1") == true) || flag == null) {
+			GlobalBaseGenericArray<KeyValuePair> ret = getComClass("10","获取天涯人力工作经验列表", flag);
 			KeyValuePair e = new KeyValuePair();
 			e.setId("");
 			e.setName("不限");
-			ret.getData().add(0, e);
+			ret.getData().add( 0,e);
+			return ret;
 		}
-		return ret;
+		else
+			return getUserClass("4", "获取天涯人力工作经验列表", "");
 	}
 	
 	@RequestMapping(value="getJobTypeList", method=RequestMethod.GET)
 	@ResponseBody
 	public GlobalBaseGenericArray<KeyValuePair> getJobTypeList(String flag) {
-		return getUserClass("56", "获取天涯人力职位类型列表", flag);
+		if((flag != null && flag.equals("1") == true) || flag == null)
+			return getComClass("35","获取天涯人力职位类型列表", flag);
+		else
+			return getUserClass("56", "获取天涯人力职位类型列表", flag);
 	}
 	
 	@RequestMapping(value="getPeriodList", method=RequestMethod.GET)
@@ -427,6 +463,40 @@ public class EmploymentCenterController extends BaseController {
 		return info;
 	}
 	
+	private GlobalBaseGenericArray<KeyValuePair> getComClass(String keyId, String category, String flag) {
+		GlobalBaseGenericArray<KeyValuePair> info = new GlobalBaseGenericArray<KeyValuePair>();
+		try {
+			JSONArray result = Common.getJArrayByGet(String.format("http://www.daijun.com/webs/comclass.php?keyid=%s", keyId));
+			if(result != null && result.size() > 0) {
+				for(Object j : result.toArray()) {
+					 JSONObject jsonObj = (JSONObject) j;
+					 KeyValuePair obj = new KeyValuePair();
+					 obj.setId(jsonObj.getString("id"));
+					 obj.setName(jsonObj.getString("name"));
+					 info.getData().add(obj);
+				}
+			}
+			Collections.sort(info.getData(), new Comparator<KeyValuePair>() {
+
+				@Override
+				public int compare(KeyValuePair o1, KeyValuePair o2) {
+					return o1.getId().hashCode() - o2.getId().hashCode();
+				}
+				
+			});
+			if(flag != null && flag.equals("0") == true) {
+				info.getData().remove(0);
+			}
+			info.setResult(Common.SUCCESS_TAG);
+		}
+		catch(Exception ex) {
+			log.error(String.format("%s异常", category), ex);
+			info.setResult(Common.FAILURE_TAG);
+			info.setError(ex.toString());
+		}
+		return info;
+	}
+	
 	@RequestMapping(value="regUser", method=RequestMethod.POST)
 	@ResponseBody
 	public GlobalBaseInfo regUser(int uid, String userName, String password,
@@ -440,6 +510,7 @@ public class EmploymentCenterController extends BaseController {
 			params.put("password", password);
 			params.put("email", email);
 			params.put("mobile", mobile);
+			params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(uid + 10000000), userName, password)));
 			
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_zhuce.php", params);
 			if(result != null && result.size() > 0) {
@@ -476,6 +547,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("uid", String.valueOf(uid + 10000000));
 		params.put("job_id", jobId);
 		params.put("com_id", companyId);
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(uid + 10000000), jobId, companyId)));
 		
 		JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_tdjl.php", params);
 		if(result != null && result.size() > 0) {
@@ -526,6 +598,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("description", description);
 		params.put("living", living);
 		params.put("domicile", hukou);
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), name, sex)));
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_base.php", params);
 			if(result != null && result.size() > 0) {
@@ -632,9 +705,11 @@ public class EmploymentCenterController extends BaseController {
 		
 		try {
 			userId = userId + 10000000;
-			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/pic.php?uid=", userId));
+			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/pic.php?uid=%s", userId));
 			if(result != null && result.size() > 0) {
-				picUrl = result.getString("resume_photo");
+				if(result.getString("resume_photo") != null) {
+					picUrl = String.format("http://www.daijun.com%s", result.getString("resume_photo").replaceFirst("\\.", ""));
+				}
 			}
 		}
 		catch(Exception ex) {
@@ -742,7 +817,7 @@ public class EmploymentCenterController extends BaseController {
 					edu.setId(jsonObj.getString("id"));
 					edu.setDegree(jsonObj.getString("title"));
 					edu.setEnrollDate(jsonObj.getString("sdate"));
-					edu.setGraduateDate(jsonObj.getString("sdate"));
+					edu.setGraduateDate(jsonObj.getString("edate"));
 					edu.setMajor(jsonObj.getString("specialty"));
 					edu.setSchool(jsonObj.getString("name"));
 					edu.setDescription(jsonObj.getString("content"));
@@ -766,7 +841,7 @@ public class EmploymentCenterController extends BaseController {
 		GlobalBaseGenericEntity<ResumeExpectInfo> info = new GlobalBaseGenericEntity<ResumeExpectInfo>();
 		try {
 			userId  = userId + 10000000;
-			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/daijun_expect_e.php?uid=%s", userId));
+			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/daijun_expect_e_cs.php?uid=%s", userId));
 			if(result != null && result.size() > 0) {
 				info.setData(new ResumeExpectInfo());
 				info.getData().setName(result.getString("name"));
@@ -814,6 +889,8 @@ public class EmploymentCenterController extends BaseController {
 		params.put("type", type);
 		params.put("report", report);
 		params.put("sflz", sflz);
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), name, industry)));
+		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_expect.php", params);
 			if(result != null && result.size() > 0) {
@@ -850,6 +927,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("department", department);
 		params.put("position", position);
 		params.put("positionDesc", positionDesc);
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), company, entryDate)));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_work.php", params);
@@ -887,6 +965,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("major", major);
 		params.put("degree", degree);
 		params.put("description", description);
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), school, enrollDate)));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_edu.php", params);
@@ -917,6 +996,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("id", id);
 		params.put("uid", String.valueOf(userId + 10000000));
 		params.put("del", "1");
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", id, String.valueOf(userId + 10000000), "1")));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_work.php", params);
@@ -948,6 +1028,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("id", id);
 		params.put("uid", String.valueOf(userId + 10000000));
 		params.put("del", "1");
+		params.put("encode", Md5Tool.md5(String.format("%s%s%s", id, String.valueOf(userId + 10000000), "1")));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_edu.php", params);
@@ -972,19 +1053,32 @@ public class EmploymentCenterController extends BaseController {
 	
 	@RequestMapping(value="modifyIcon", method=RequestMethod.POST)
 	@ResponseBody
-	public GlobalBaseInfo modifyIcon(String userId, @RequestParam(value="icon",required=false) MultipartFile icon, 
-			 String password) {
+	public GlobalBaseInfo modifyIcon(@RequestParam(value="icon",required=false) MultipartFile icon, String userId, 
+			 String password, HttpServletRequest request) {
 		
 		GlobalBaseInfo info = new GlobalBaseInfo();
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("uid", String.valueOf(Integer.valueOf(userId) + 10000000));
+		//params.put("uid", String.valueOf(Integer.valueOf(userId) + 10000000));
 		
 		try {
-//			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;  
-//	        CommonsMultipartFile file = (CommonsMultipartFile) multipartRequest  
-//	                .getFile("icon");  
-			params.put("pic", org.apache.commons.codec.binary.Base64.encodeBase64String(icon.getBytes()));
-			
+			byte[] pic = null;
+			DiskFileUpload diskFileUpload = new DiskFileUpload();
+			List fileItems = diskFileUpload.parseRequest(request);
+			Iterator iter = fileItems.iterator();
+		    for( ; iter.hasNext(); ) {
+		        FileItem fileItem = (FileItem) iter.next();
+		        if( fileItem.isFormField() ) {
+		            // 当前是一个表单项
+		        	if(fileItem.getFieldName().equals("userId") == true) {
+		        		userId = fileItem.getString();
+		        	}
+		        } else {
+		            // 当前是一个上传的文件
+		        	pic = fileItem.get();
+		        }
+		    }
+			params.put("pic", org.apache.commons.codec.binary.Base64.encodeBase64String(pic));
+			params.put("uid", String.valueOf(Integer.valueOf(userId) + 10000000));
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_pic.php", params);
 			if(result != null && result.size() > 0) {
 				if(result.getInteger("code").equals(1) == true) {
