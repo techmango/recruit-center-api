@@ -841,7 +841,7 @@ public class EmploymentCenterController extends BaseController {
 		GlobalBaseGenericEntity<ResumeExpectInfo> info = new GlobalBaseGenericEntity<ResumeExpectInfo>();
 		try {
 			userId  = userId + 10000000;
-			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/daijun_expect_e_cs.php?uid=%s", userId));
+			JSONObject result = Common.getJObjectByGet(String.format("http://www.daijun.com/webs/daijun_expect_e.php?uid=%s", userId));
 			if(result != null && result.size() > 0) {
 				info.setData(new ResumeExpectInfo());
 				info.getData().setName(result.getString("name"));

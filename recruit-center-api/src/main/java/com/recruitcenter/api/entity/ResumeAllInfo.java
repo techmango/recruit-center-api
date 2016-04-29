@@ -234,6 +234,16 @@ public class ResumeAllInfo {
 	String typeId = "";
 	String arrivalDays = "";
 	String arrivalDaysId = "";
+	String rname = "";
+	
+	public String getRname() {
+		return rname;
+	}
+
+	public void setRname(String rname) {
+		this.rname = rname;
+	}
+
 	public String getIndustryId() {
 		return industryId;
 	}
