@@ -59,9 +59,9 @@ public class EmploymentCenterController extends BaseController {
 		GlobalBaseGenericArray<JobEntity> info = new GlobalBaseGenericArray<JobEntity>();
 		
 		try {
-			JSONArray result = Common.getJArrayByGet("http://www.daijun.com/webs/zwlb.php?shu=500");
+			JSONArray result = Common.getJArrayByGet(String.format("http://www.daijun.com/webs/zwlb.php?page=%s&size=%s", page, size));
 			if(result != null && result.size() > 0) {
-				ArrayList<JobEntity> filterList = new ArrayList<JobEntity>();
+				//ArrayList<JobEntity> filterList = new ArrayList<JobEntity>();
 				for(Object j : result.toArray()) {
 					 JSONObject jsonObj = (JSONObject) j;
 					 JobEntity job = new JobEntity();
@@ -73,15 +73,16 @@ public class EmploymentCenterController extends BaseController {
 					 job.setCompany(jsonObj.getString("企业名称"));
 					 job.setDegree(jsonObj.getString("学历要求"));
 					 job.setSalary(jsonObj.getString("薪资水平"));
-					 filterList.add(job);
+					 //filterList.add(job);
+					 info.getData().add(job);
 				}
 				
-				List<JobEntity> subList = ListPageUtils.page((page - 1) * size, 
-						(page - 1) * size + size, filterList);
-				
-				for(JobEntity job : subList) {
-					info.getData().add(job);
-				}
+//				List<JobEntity> subList = ListPageUtils.page((page - 1) * size, 
+//						(page - 1) * size + size, filterList);
+//				
+//				for(JobEntity job : subList) {
+//					info.getData().add(job);
+//				}
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
@@ -112,12 +113,12 @@ public class EmploymentCenterController extends BaseController {
 		GlobalBaseGenericArray<JobEntity> info = new GlobalBaseGenericArray<JobEntity>();
 		
 		try {
-			String searchUrl = String.format("http://www.daijun.com/webs/zwlb.php?key=%s&location=%s&industry=%s&position=%s&salary=%s&degree=%s&experience=%s&type=%s&time=%s", 
-					key, location, industry, position, salary, degree, experience, type, time);
+			String searchUrl = String.format("http://www.daijun.com/webs/zwlb.php?key=%s&location=%s&industry=%s&position=%s&salary=%s&degree=%s&experience=%s&type=%s&time=%s&page=%s&size=%s", 
+					key, location, industry, position, salary, degree, experience, type, time, page, size);
 			log.info(searchUrl);
 			JSONArray result = Common.getJArrayByGet(searchUrl);
 			if(result != null && result.size() > 0) {
-				ArrayList<JobEntity> filterList = new ArrayList<JobEntity>();
+				//ArrayList<JobEntity> filterList = new ArrayList<JobEntity>();
 				for(Object j : result.toArray()) {
 					 JSONObject jsonObj = (JSONObject) j;
 					 JobEntity job = new JobEntity();
@@ -129,15 +130,16 @@ public class EmploymentCenterController extends BaseController {
 					 job.setCompany(jsonObj.getString("企业名称"));
 					 job.setDegree(jsonObj.getString("学历要求"));
 					 job.setSalary(jsonObj.getString("薪资水平"));
-					 filterList.add(job);
+					 //filterList.add(job);
+					 info.getData().add(job);
 				}
 				
-				List<JobEntity> subList = ListPageUtils.page((page - 1) * size, 
-						(page - 1) * size + size, filterList);
-				
-				for(JobEntity job : subList) {
-					info.getData().add(job);
-				}
+//				List<JobEntity> subList = ListPageUtils.page((page - 1) * size, 
+//						(page - 1) * size + size, filterList);
+//				
+//				for(JobEntity job : subList) {
+//					info.getData().add(job);
+//				}
 			}
 			info.setResult(Common.SUCCESS_TAG);
 		}
