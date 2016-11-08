@@ -619,6 +619,10 @@ public class Common {
     }
 	
 	public static JSONObject getJObjectByPost(String url, Map<String, String> params){
+		return getJObjectByPostWithEncode(url, "GB2312", params);
+	}
+	
+	public static JSONObject getJObjectByPostWithEncode(String url, String encode, Map<String, String> params){
 		JSONObject resultJsonObject= null;
 		if ("".equals(url) || url == null) {
 			return null;
@@ -637,7 +641,7 @@ public class Common {
 		CloseableHttpResponse httpResponse = null;
 		try {
 			// HttpClient发出一个Http Post请求
-			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+			httpPost.setEntity(new UrlEncodedFormEntity(nvps, encode));
 			httpResponse = httpClient.execute(httpPost);
 			// 得到httpResponse的状态响应码
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -646,7 +650,7 @@ public class Common {
 				HttpEntity httpEntity = httpResponse.getEntity();
 				if (httpEntity != null) {
 					try {
-						String content = EntityUtils.toString(httpEntity, "UTF-8");
+						String content = EntityUtils.toString(httpEntity, encode);
 						resultJsonObject = JSONObject.parseObject(content);
 						EntityUtils.consume(httpEntity);
 					} catch (Exception e) {

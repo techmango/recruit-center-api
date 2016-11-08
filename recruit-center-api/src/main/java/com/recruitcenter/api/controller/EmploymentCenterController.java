@@ -505,14 +505,13 @@ public class EmploymentCenterController extends BaseController {
 			String email, String mobile) {
 		GlobalBaseInfo info = new GlobalBaseInfo();
 		try {
-			
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("uid", String.valueOf(uid + 10000000));
 			params.put("username", userName);
 			params.put("password", password);
 			params.put("email", email);
 			params.put("mobile", mobile);
-			params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(uid + 10000000), userName, password)));
+			params.put("encode", Md5Tool.md5WithEncode(String.format("%s%s%s", String.valueOf(uid + 10000000), userName, password), "GB2312"));
 			
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_zhuce.php", params);
 			if(result != null && result.size() > 0) {
@@ -600,7 +599,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("description", description);
 		params.put("living", living);
 		params.put("domicile", hukou);
-		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), name, sex)));
+		params.put("encode", Md5Tool.md5WithEncode(String.format("%s%s%s", String.valueOf(userId + 10000000), name, sex), "GB2312"));
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_base.php", params);
 			if(result != null && result.size() > 0) {
@@ -891,7 +890,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("type", type);
 		params.put("report", report);
 		params.put("sflz", sflz);
-		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), name, industry)));
+		params.put("encode", Md5Tool.md5WithEncode(String.format("%s%s%s", String.valueOf(userId + 10000000), name, industry), "GB2312"));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_expect.php", params);
@@ -929,7 +928,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("department", department);
 		params.put("position", position);
 		params.put("positionDesc", positionDesc);
-		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), company, entryDate)));
+		params.put("encode", Md5Tool.md5WithEncode(String.format("%s%s%s", String.valueOf(userId + 10000000), company, entryDate), "GB2312"));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_work.php", params);
@@ -967,7 +966,7 @@ public class EmploymentCenterController extends BaseController {
 		params.put("major", major);
 		params.put("degree", degree);
 		params.put("description", description);
-		params.put("encode", Md5Tool.md5(String.format("%s%s%s", String.valueOf(userId + 10000000), school, enrollDate)));
+		params.put("encode", Md5Tool.md5WithEncode(String.format("%s%s%s", String.valueOf(userId + 10000000), school, enrollDate), "GB2312"));
 		
 		try {
 			JSONObject result = Common.getJObjectByPost("http://www.daijun.com/webs/daijun_edu.php", params);

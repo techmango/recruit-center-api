@@ -25,7 +25,7 @@ public class Md5Tool {
 		return str;
 	}
 	public static void main(String[] args) {
-		System.err.println(getMd5("root"));
+		System.err.println(Md5Tool.md5(String.format("%s%s%s", String.valueOf(8888 + 10000000), "乱码吗", "123321")));
 	}
 	
 	public static String stringMD5(String input) {
@@ -90,6 +90,22 @@ public class Md5Tool {
         try{
              MessageDigest md = MessageDigest.getInstance("MD5");
              md.update(txt.getBytes("UTF-8"));    //问题主要出在这里，Java的字符串是unicode编码，不受源码文件的编码影响；而PHP的编码是和源码文件的编码一致，受源码编码影响。
+             StringBuffer buf=new StringBuffer();            
+             for(byte b:md.digest()){
+                  buf.append(String.format("%02x", b&0xff));        
+             }
+            return  buf.toString();
+          }catch( Exception e ){
+              e.printStackTrace(); 
+
+              return null;
+           } 
+   }
+	
+	public static String md5WithEncode(String txt, String encode) {
+        try{
+             MessageDigest md = MessageDigest.getInstance("MD5");
+             md.update(txt.getBytes(encode));    //问题主要出在这里，Java的字符串是unicode编码，不受源码文件的编码影响；而PHP的编码是和源码文件的编码一致，受源码编码影响。
              StringBuffer buf=new StringBuffer();            
              for(byte b:md.digest()){
                   buf.append(String.format("%02x", b&0xff));        
